@@ -1,33 +1,38 @@
 package com.haben.springbatch.model;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.math.BigDecimal;
 
+@XmlRootElement(name="product")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Product {
 
-    private Integer productID;
+    private Integer productId;
     private String productName;
 
     private BigDecimal price;
     private Integer unit;
-    private String ProductDesc;
+    private String productDesc;
 
     @Override
     public String toString() {
         return "Product{" +
-                "productID=" + productID +
+                "productID=" + productId +
                 ", prodName='" + productName + '\'' +
                 ", price=" + price +
                 ", unit=" + unit +
-                ", ProductDesc='" + ProductDesc + '\'' +
+                ", ProductDesc='" + productDesc + '\'' +
                 '}';
     }
 
     public Integer getProductID() {
-        return productID;
+        return productId;
     }
 
     public void setProductID(Integer productID) {
-        this.productID = productID;
+        this.productId = productID;
     }
 
     public String getProdName() {
@@ -55,10 +60,10 @@ public class Product {
     }
 
     public String getProductDesc() {
-        return ProductDesc;
+        return productDesc;
     }
 
     public void setProductDesc(String productDesc) {
-        ProductDesc = productDesc;
+        productDesc = productDesc;
     }
 }

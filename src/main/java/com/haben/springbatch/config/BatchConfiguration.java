@@ -21,12 +21,15 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.xml.StaxEventItemReader;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+
 
 @EnableBatchProcessing
 @Configuration
@@ -72,8 +75,11 @@ public class BatchConfiguration {
                 .<Integer,Integer>chunk(3)
                 //.reader(reader())
                 //.processor(inMemeItemProcessor)
-                .reader(flatFileItemReader(null))
+                // for csv
+                //.reader(flatFileItemReader(null))
 
+                // for xml
+                .reader(xmlItemReader(null))
                 .writer(new ConsoleItemWriter())
 
                 .build();
@@ -103,11 +109,8 @@ public class BatchConfiguration {
 //                                setDelimiter("|");
                             }
                         });
-
                         setFieldSetMapper( new BeanWrapperFieldSetMapper<Product>(){
-                            {
-                                setTargetType(Product.class);
-                            }
+                            { setTargetType(Product.class); }
                         });
                     }
                 }
@@ -116,8 +119,21 @@ public class BatchConfiguration {
         //step 3 tell reader to skip the header
         reader.setLinesToSkip(1);
         return reader;
-
     }
+
+    @StepScope
+    @Bean
+    public StaxEventItemReader xmlItemReader(@Value( "#{jobParameters['fileInput']}" ) FileSystemResource inputFile){
+        // where to read the xml file
+        StaxEventItemReader reader = new StaxEventItemReader();
+        reader.setResource(inputFile);
+        //need to let reader to know which tags describe the domain object
+        reader.setFragmentRootElementName("product");
+        // tell reader how to parse XML and which domain object to be mapped
+        reader.setUnmarshaller(new Jaxb2Marshaller(){{ setClassesToBeBound(Product.class); }});
+        return reader;
+    }
+
 
 
 

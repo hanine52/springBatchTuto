@@ -21,6 +21,7 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
 import org.springframework.batch.item.xml.StaxEventItemReader;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.batch.item.file.transform.Range;
+
 
 
 @EnableBatchProcessing
@@ -79,7 +82,9 @@ public class BatchConfiguration {
                 //.reader(flatFileItemReader(null))
 
                 // for xml
-                .reader(xmlItemReader(null))
+                //.reader(xmlItemReader(null))
+                //for txt
+                .reader(flatfixFileItemReader(null))
                 .writer(new ConsoleItemWriter())
 
                 .build();
@@ -105,7 +110,7 @@ public class BatchConfiguration {
                     {
                         setLineTokenizer( new DelimitedLineTokenizer() {
                             {
-                                setNames("productID","productName","ProductDesc","price","unit");
+                                setNames("productID","productName","productDesc","price","unit");
 //                                setDelimiter("|");
                             }
                         });
@@ -121,8 +126,7 @@ public class BatchConfiguration {
         return reader;
     }
 
-    @StepScope
-    @Bean
+    @StepScope @Bean
     public StaxEventItemReader xmlItemReader(@Value( "#{jobParameters['fileInput']}" ) FileSystemResource inputFile){
         // where to read the xml file
         StaxEventItemReader reader = new StaxEventItemReader();
@@ -136,7 +140,45 @@ public class BatchConfiguration {
 
 
 
+    @StepScope
+    @Bean
+    public FlatFileItemReader flatfixFileItemReader(
+            @Value( "#{jobParameters['fileInput']}" )
+                    FileSystemResource inputFile ){
+        FlatFileItemReader reader = new FlatFileItemReader();
+        // step 1 let reader know where is the file
+        reader.setResource( inputFile );
 
+        //create the line Mapper
+        reader.setLineMapper(
+                new DefaultLineMapper<Product>(){
+                    {
+                        setLineTokenizer( new FixedLengthTokenizer() {
+                            {
+                                setNames( new String[]{"prodId","productName","productDesc","price","unit"});
+                                setColumns(
+                                        new Range(1,16),
+                                        new Range(17,41),
+                                        new Range(42,65),
+                                        new Range(66, 73),
+                                        new Range(74,80)
+                                );
+                            }
+                        });
+
+                        setFieldSetMapper( new BeanWrapperFieldSetMapper<Product>(){
+                            {
+                                setTargetType(Product.class);
+                            }
+                        });
+                    }
+                }
+
+        );
+        //step 3 tell reader to skip the header
+        reader.setLinesToSkip(1);
+        return reader;
+    }
 
     public Tasklet helloWorldTK() {
         return (new Tasklet() {

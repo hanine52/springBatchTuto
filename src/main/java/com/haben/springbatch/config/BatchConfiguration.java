@@ -85,6 +85,15 @@ public class BatchConfiguration {
             }
         });
     }
+    public Tasklet helloWorldTK2() {
+        return (new Tasklet() {
+            @Override
+            public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
+                System.out.println("Hello world");
+                return RepeatStatus.FINISHED;
+            }
+        });
+    }
 
 
 }

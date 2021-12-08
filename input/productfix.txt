@@ -1,4 +1,4 @@
-productID       productName             productDesc                price    unit
+productId       productName             productDesc                price    unit
                1                   Apple        apple cell phone  500.00      10
                2                    Dell           dell computer    3333       5
                3                  office      ms office software     196      23

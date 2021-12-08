@@ -31,20 +31,20 @@ public class Product {
                 '}';
     }
 
-    public Integer getProductID() {
+    public Integer getProductId() {
         return productId;
     }
 
-    public void setProductID(Integer productID) {
-        this.productId = productID;
+    public void setProductId(Integer productId) {
+        this.productId = productId;
     }
 
-    public String getProdName() {
+    public String getProductName() {
         return productName;
     }
 
-    public void setProdName(String prodName) {
-        this.productName = prodName;
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
     public BigDecimal getPrice() {

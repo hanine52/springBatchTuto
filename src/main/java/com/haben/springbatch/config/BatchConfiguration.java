@@ -20,11 +20,13 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.adapter.ItemReaderAdapter;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
+import org.springframework.batch.item.file.FlatFileFooterCallback;
+import org.springframework.batch.item.file.FlatFileHeaderCallback;
 import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
-import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
-import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
+import org.springframework.batch.item.file.transform.*;
 import org.springframework.batch.item.json.JacksonJsonObjectReader;
 import org.springframework.batch.item.json.JsonItemReader;
 import org.springframework.batch.item.xml.StaxEventItemReader;
@@ -36,9 +38,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.batch.item.file.transform.Range;
 
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 @EnableBatchProcessing
@@ -60,8 +65,8 @@ public class BatchConfiguration {
     private DataSource dataSource;
 
 
-    @Autowired
-    private ProductServiceAdapter productServiceAdapter;
+//    @Autowired
+//    private ProductServiceAdapter productServiceAdapter;
 
 //    @Autowired
 //    private InMemeItemProcessor inMemeItemProcessor;
@@ -93,7 +98,7 @@ public class BatchConfiguration {
                 //.reader(reader())
                 //.processor(inMemeItemProcessor)
                 // for csv
-                //.reader(flatFileItemReader(null))
+                .reader(flatFileItemReader(null))
 
                 // for xml
                 //.reader(xmlItemReader(null))
@@ -102,31 +107,32 @@ public class BatchConfiguration {
                 //for json
                 //.reader(jsonItemReader(null))
                 //for JDBC
-                .reader(jdbcCursorItemReader())
+                //.reader(jdbcCursorItemReader())
 
                 //read from service
-                .reader(serviceItemReader())
-                .writer(new ConsoleItemWriter())
+//                .reader(serviceItemReader())
 
+
+
+               // .writer(new ConsoleItemWriter())
+                .writer(flatFileItemWriter(null))
                 .build();
     }
 
-    @Bean
+/*    @Bean
     public ItemReaderAdapter serviceItemReader(){
         ItemReaderAdapter reader = new ItemReaderAdapter();
         reader.setTargetObject(productServiceAdapter);
         reader.setTargetMethod("nextProduct");
 
         return reader;
-    }
+    }*/
 
     @Bean
     public InMemReader reader(){
         return new InMemReader();
     }
 
-//    @StepScope  @Value( "#{jobParameters['fileInput']}" )
-//                    FileSystemResource inputFile
     @StepScope @Bean
     public FlatFileItemReader flatFileItemReader(@Value( "#{jobParameters['fileInput']}")  FileSystemResource inputFile){
         FlatFileItemReader reader = new FlatFileItemReader();
@@ -217,6 +223,43 @@ public class BatchConfiguration {
         //step 3 tell reader to skip the header
         reader.setLinesToSkip(1);
         return reader;
+    }
+
+    @Bean
+    @StepScope
+    public FlatFileItemWriter flatFileItemWriter( @Value("#{jobParameters['fileOutput']}" )FileSystemResource outputFile){
+        FlatFileItemWriter writer = new FlatFileItemWriter();
+
+        writer.setResource(outputFile);
+        writer.setLineAggregator( new DelimitedLineAggregator(){
+            {
+
+                setDelimiter("|");
+                setFieldExtractor(new BeanWrapperFieldExtractor(){
+                    {
+                        setNames(new String[]{"productId","productName","productDesc","price","unit" });
+                    }
+                });
+            }
+        });
+
+        // how to write the header
+        writer.setHeaderCallback(new FlatFileHeaderCallback() {
+            @Override
+            public void writeHeader(Writer writer) throws IOException {
+                writer.write("productID,productName,ProductDesc,price,unit");
+            }
+        });
+
+        writer.setAppendAllowed(false);
+
+        writer.setFooterCallback(new FlatFileFooterCallback() {
+            @Override
+            public void writeFooter(Writer writer) throws IOException {
+                writer.write(" The file is created at " + new SimpleDateFormat().format(new Date()));
+            }
+        });
+        return writer;
     }
 
     @Bean

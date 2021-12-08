@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-@Service
+//@Service
 public class ProductService {
     public ArrayList<Product> getProducts(){
         RestTemplate restTemplate = new RestTemplate();

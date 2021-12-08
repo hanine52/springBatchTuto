@@ -6,6 +6,7 @@ import com.haben.springbatch.listener.HwStepExecutionListener;
 import com.haben.springbatch.model.Product;
 import com.haben.springbatch.processor.InMemeItemProcessor;
 import com.haben.springbatch.reader.InMemReader;
+import com.haben.springbatch.reader.ProductServiceAdapter;
 import com.haben.springbatch.writer.ConsoleItemWriter;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -17,6 +18,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.item.adapter.ItemReaderAdapter;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
@@ -56,6 +58,10 @@ public class BatchConfiguration {
 
     @Autowired
     private DataSource dataSource;
+
+
+    @Autowired
+    private ProductServiceAdapter productServiceAdapter;
 
 //    @Autowired
 //    private InMemeItemProcessor inMemeItemProcessor;
@@ -97,9 +103,21 @@ public class BatchConfiguration {
                 //.reader(jsonItemReader(null))
                 //for JDBC
                 .reader(jdbcCursorItemReader())
+
+                //read from service
+                .reader(serviceItemReader())
                 .writer(new ConsoleItemWriter())
 
                 .build();
+    }
+
+    @Bean
+    public ItemReaderAdapter serviceItemReader(){
+        ItemReaderAdapter reader = new ItemReaderAdapter();
+        reader.setTargetObject(productServiceAdapter);
+        reader.setTargetMethod("nextProduct");
+
+        return reader;
     }
 
     @Bean

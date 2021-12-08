@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Products>
+    <product>
+        <ProdID>1</ProdID>
+        <productName>Apple</productName>
+        <price>500.00</price>
+        <unit>10</unit>
+        <productDesc>apple cell phone</productDesc>
+    </product>
+    <product>
+        <ProdID>2</ProdID>
+        <productName>Dell</productName>
+        <price>3000</price>
+        <unit>5</unit>
+        <productDesc>dell computer</productDesc>
+    </product>
+    <product>
+        <ProdID>3</ProdID>
+        <productName>office</productName>
+        <price>196</price>
+        <unit>23</unit>
+        <productDesc>ms office software</productDesc>
+    </product>
+    <product>
+        <ProdID>4</ProdID>
+        <productName>Samsung</productName>
+        <price>200.00</price>
+        <unit>10</unit>
+        <productDesc>samsung cell phone</productDesc>
+    </product>
+    <product>
+        <ProdID>5</ProdID>
+        <productName>Hwawi</productName>
+        <price>15689</price>
+        <unit>5</unit>
+        <productDesc>Huwaei computer</productDesc>
+    </product>
+    <product>
+        <ProdID>6</ProdID>
+        <productName>Media</productName>
+        <price>25</price>
+        <unit>23</unit>
+        <productDesc>Madia world office software</productDesc>
+    </product>
+</Products>

@@ -1,16 +1,17 @@
 package com.haben.springbatch.model;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlElement;
-
 import java.math.BigDecimal;
 
 @XmlRootElement(name="product")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Product {
 
+    @XStreamAlias("ProdID")
     private Integer productId;
 
     //@XmlElement(name="productName")

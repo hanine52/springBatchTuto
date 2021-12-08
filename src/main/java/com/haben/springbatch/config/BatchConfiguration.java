@@ -30,6 +30,7 @@ import org.springframework.batch.item.file.transform.*;
 import org.springframework.batch.item.json.JacksonJsonObjectReader;
 import org.springframework.batch.item.json.JsonItemReader;
 import org.springframework.batch.item.xml.StaxEventItemReader;
+import org.springframework.batch.item.xml.StaxEventItemWriter;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,12 +39,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.oxm.xstream.XStreamMarshaller;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 
 @EnableBatchProcessing
@@ -115,7 +118,10 @@ public class BatchConfiguration {
 
 
                // .writer(new ConsoleItemWriter())
-                .writer(flatFileItemWriter(null))
+                //writer csv
+                //.writer(flatFileItemWriter(null))
+                .writer(xmlWriter(null))
+
                 .build();
     }
 
@@ -260,6 +266,24 @@ public class BatchConfiguration {
             }
         });
         return writer;
+    }
+
+    @Bean
+    @StepScope
+    public StaxEventItemWriter xmlWriter(@Value("#{jobParameters['fileOutput']}" )FileSystemResource outputFile){
+
+        XStreamMarshaller marshaller = new XStreamMarshaller();
+        HashMap<String,Class> aliases = new HashMap<>();
+        aliases.put("product",Product.class);
+        marshaller.setAliases(aliases);
+        marshaller.setAutodetectAnnotations(true);
+
+        StaxEventItemWriter staxEventItemWriter = new StaxEventItemWriter();
+
+        staxEventItemWriter.setResource(outputFile);
+        staxEventItemWriter.setMarshaller(marshaller);
+        staxEventItemWriter.setRootTagName("Products");
+        return staxEventItemWriter;
     }
 
     @Bean

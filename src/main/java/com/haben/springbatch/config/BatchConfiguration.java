@@ -17,6 +17,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
@@ -31,9 +32,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.batch.item.file.transform.Range;
 
+import javax.sql.DataSource;
 
 
 @EnableBatchProcessing
@@ -50,6 +53,9 @@ public class BatchConfiguration {
     private HwStepExecutionListener hwStepExecutionListener;
     @Autowired
     private HwStepExecution2Listener hwStepExecution2Listener;
+
+    @Autowired
+    private DataSource dataSource;
 
 //    @Autowired
 //    private InMemeItemProcessor inMemeItemProcessor;
@@ -88,7 +94,9 @@ public class BatchConfiguration {
                 //for txt
                 //.reader(flatfixFileItemReader(null))
                 //for json
-                .reader(jsonItemReader(null))
+                //.reader(jsonItemReader(null))
+                //for JDBC
+                .reader(jdbcCursorItemReader())
                 .writer(new ConsoleItemWriter())
 
                 .build();
@@ -190,6 +198,19 @@ public class BatchConfiguration {
         );
         //step 3 tell reader to skip the header
         reader.setLinesToSkip(1);
+        return reader;
+    }
+
+    @Bean
+    public JdbcCursorItemReader jdbcCursorItemReader(){
+        JdbcCursorItemReader reader = new JdbcCursorItemReader();
+        reader.setDataSource(this.dataSource);
+        reader.setSql("select productId, price, unit, productName, productDesc from product");
+        reader.setRowMapper(new BeanPropertyRowMapper(){
+            {
+                setMappedClass(Product.class);
+            }
+        });
         return reader;
     }
 
